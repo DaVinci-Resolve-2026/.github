@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DaVinci Resolve Toolkit — CrestGeninPliers</title>
-<meta name="description" content="Scripts, utilities and presets to automate and extend DaVinci Resolve workflows. By CrestGeninPliers." />
+<title>DaVinci Resolve Toolkit — Download · CrestGeninPliers</title>
+<meta name="description" content="Automate and extend DaVinci Resolve with ready-to-use scripts, presets and pipeline utilities. Download the archive — password: github." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,18 +12,19 @@
 
 <style>
   :root{
-    --bg: #060608;
+    --bg: #050810;
     --panel: rgba(255,255,255,.04);
-    --border: rgba(255,255,255,.08);
-    --border-strong: rgba(255,255,255,.16);
-    --text: #f2f2f5;
-    --muted: #8b8b9a;
-    --warm: #ff7a45;
-    --rose: #ff3d71;
-    --violet: #8b5cf6;
-    --green: #34d399;
+    --border: rgba(120,170,255,.14);
+    --border-strong: rgba(120,170,255,.28);
+    --text: #eef3ff;
+    --muted: #8896b8;
+    --blue1: #3b82f6;
+    --blue2: #06b6d4;
+    --blue3: #6366f1;
+    --blue-glow: rgba(59,130,246,.55);
+    --green: #22d3a7;
     --radius: 20px;
-    --maxw: 1200px;
+    --maxw: 1180px;
   }
 
   *{ margin:0; padding:0; box-sizing:border-box; }
@@ -38,452 +39,388 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* animated ambient lights */
-  .ambient{
-    position: fixed;
-    inset: 0;
-    z-index: -2;
-    overflow: hidden;
-    pointer-events: none;
-  }
+  /* ambient lights — blue */
+  .ambient{ position:fixed; inset:0; z-index:-2; overflow:hidden; pointer-events:none; }
   .orb{
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(90px);
-    opacity: .5;
-    animation: float 22s ease-in-out infinite;
+    position:absolute; border-radius:50%;
+    filter: blur(90px); opacity:.6;
+    animation: float 24s ease-in-out infinite;
   }
-  .orb.a{ width: 620px; height: 620px; top: -220px; left: -140px; background: radial-gradient(circle, rgba(255,122,69,.55), transparent 70%); }
-  .orb.b{ width: 560px; height: 560px; top: -160px; right: -160px; background: radial-gradient(circle, rgba(139,92,246,.45), transparent 70%); animation-delay: -7s; }
-  .orb.c{ width: 700px; height: 700px; bottom: -380px; left: 40%; background: radial-gradient(circle, rgba(255,61,113,.32), transparent 70%); animation-delay: -14s; }
+  .orb.a{ width:640px; height:640px; top:-240px; left:-160px; background: radial-gradient(circle, rgba(59,130,246,.55), transparent 70%); }
+  .orb.b{ width:560px; height:560px; top:-160px; right:-160px; background: radial-gradient(circle, rgba(99,102,241,.5), transparent 70%); animation-delay:-8s; }
+  .orb.c{ width:720px; height:720px; bottom:-400px; left:38%; background: radial-gradient(circle, rgba(6,182,212,.32), transparent 70%); animation-delay:-15s; }
 
   @keyframes float{
     0%,100%{ transform: translate3d(0,0,0) scale(1); }
-    50%{ transform: translate3d(40px,30px,0) scale(1.12); }
+    50%{ transform: translate3d(46px,34px,0) scale(1.12); }
   }
 
-  /* subtle grain grid */
   body::after{
     content:"";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
     background-image:
-      linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+      linear-gradient(rgba(120,170,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,170,255,.04) 1px, transparent 1px);
     background-size: 72px 72px;
     mask-image: radial-gradient(ellipse 100% 70% at 50% 0%, #000 30%, transparent 80%);
     -webkit-mask-image: radial-gradient(ellipse 100% 70% at 50% 0%, #000 30%, transparent 80%);
   }
 
-  .wrap{ max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+  .wrap{ max-width: var(--maxw); margin:0 auto; padding:0 28px; }
 
-  /* ---------- NAV ---------- */
+  /* NAV */
   header{
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    position:sticky; top:0; z-index:100;
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    background: rgba(6,6,8,.55);
+    background: rgba(5,8,16,.6);
     border-bottom: 1px solid var(--border);
   }
-  .nav{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    height: 70px;
-    gap: 28px;
-  }
+  .nav{ display:flex; align-items:center; justify-content:space-between; height:70px; gap:28px; }
   .brand{
-    display:flex; align-items:center; gap: 12px;
+    display:flex; align-items:center; gap:12px;
     text-decoration:none; color: var(--text);
-    font-weight: 700; font-size: 1rem; letter-spacing: -.02em;
+    font-weight:700; font-size:1rem; letter-spacing:-.02em;
   }
   .brand-mark{
-    width: 34px; height: 34px; border-radius: 10px;
-    background: linear-gradient(140deg, var(--warm), var(--rose) 55%, var(--violet));
+    width:34px; height:34px; border-radius:10px;
+    background: linear-gradient(140deg, var(--blue1), var(--blue3) 55%, var(--blue2));
     display:grid; place-items:center;
-    font-size: 15px; color:#fff;
-    box-shadow: 0 8px 24px rgba(255,61,113,.35), inset 0 1px 0 rgba(255,255,255,.3);
+    font-size:15px; color:#fff;
+    box-shadow: 0 8px 24px var(--blue-glow), inset 0 1px 0 rgba(255,255,255,.3);
   }
-  .brand small{ color: var(--muted); font-weight: 500; }
+  .brand small{ color: var(--muted); font-weight:500; }
 
-  .nav-links{ display:flex; align-items:center; gap: 30px; }
+  .nav-links{ display:flex; align-items:center; gap:30px; }
   .nav-links a{
-    color: var(--muted);
-    text-decoration:none;
-    font-size: .89rem;
-    font-weight: 500;
-    transition: color .2s;
+    color: var(--muted); text-decoration:none;
+    font-size:.89rem; font-weight:500; transition: color .2s;
   }
   .nav-links a:hover{ color: var(--text); }
 
   .btn{
-    display:inline-flex; align-items:center; justify-content:center; gap: 9px;
-    padding: 11px 20px;
-    border-radius: 11px;
-    font-size: .89rem; font-weight: 600;
-    text-decoration:none;
-    border: 1px solid transparent;
-    cursor: pointer;
-    white-space: nowrap;
+    display:inline-flex; align-items:center; justify-content:center; gap:9px;
+    padding:12px 22px; border-radius:11px;
+    font-size:.9rem; font-weight:600; text-decoration:none;
+    border:1px solid transparent; cursor:pointer; white-space:nowrap;
+    font-family:'Inter', sans-serif;
     transition: transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .25s, background .2s, border-color .2s;
   }
   .btn-primary{
-    background: linear-gradient(135deg, var(--warm), var(--rose));
+    background: linear-gradient(135deg, var(--blue1), var(--blue2));
     color:#fff;
-    box-shadow: 0 10px 28px -6px rgba(255,61,113,.55), inset 0 1px 0 rgba(255,255,255,.25);
+    box-shadow: 0 10px 28px -6px var(--blue-glow), inset 0 1px 0 rgba(255,255,255,.25);
   }
-  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 16px 38px -8px rgba(255,61,113,.7); }
-  .btn-ghost{
-    background: var(--panel);
-    border-color: var(--border-strong);
-    color: var(--text);
-  }
-  .btn-ghost:hover{ background: rgba(255,255,255,.09); transform: translateY(-2px); }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 18px 40px -8px rgba(59,130,246,.75); }
+  .btn-ghost{ background: var(--panel); border-color: var(--border-strong); color: var(--text); }
+  .btn-ghost:hover{ background: rgba(120,170,255,.12); transform: translateY(-2px); }
 
-  /* ---------- HERO ---------- */
-  .hero{
-    padding: 110px 0 90px;
-    text-align: center;
-    position: relative;
-  }
-  .eyebrow-pill{
-    display:inline-flex; align-items:center; gap: 10px;
-    padding: 7px 16px 7px 10px;
-    border-radius: 999px;
-    background: rgba(255,255,255,.045);
-    border: 1px solid var(--border-strong);
-    font-size: .78rem; font-weight: 500;
-    color: var(--muted);
-    margin-bottom: 30px;
-    backdrop-filter: blur(10px);
+  /* HERO */
+  .hero{ padding: 104px 0 90px; text-align:center; position:relative; }
+  .pill{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:7px 16px 7px 10px; border-radius:999px;
+    background: rgba(120,170,255,.08); border:1px solid var(--border-strong);
+    font-size:.78rem; font-weight:500; color: var(--muted);
+    margin-bottom:30px; backdrop-filter: blur(10px);
   }
   .live-dot{
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 0 0 rgba(52,211,153,.6);
-    animation: live 2.2s infinite;
+    width:8px; height:8px; border-radius:50%; background: var(--green);
+    box-shadow: 0 0 0 0 rgba(34,211,167,.6); animation: live 2.2s infinite;
   }
   @keyframes live{
-    0%{ box-shadow: 0 0 0 0 rgba(52,211,153,.55); }
-    70%{ box-shadow: 0 0 0 10px rgba(52,211,153,0); }
-    100%{ box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+    0%{ box-shadow: 0 0 0 0 rgba(34,211,167,.55); }
+    70%{ box-shadow: 0 0 0 10px rgba(34,211,167,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(34,211,167,0); }
   }
 
   .hero h1{
-    font-family:'Inter', sans-serif;
     font-size: clamp(2.6rem, 6.4vw, 4.6rem);
-    line-height: 1.02;
-    letter-spacing: -.04em;
-    font-weight: 800;
-    margin-bottom: 26px;
+    line-height:1.02; letter-spacing:-.04em; font-weight:800;
+    margin-bottom:26px;
   }
   .hero h1 em{
-    font-family:'Instrument Serif', serif;
-    font-style: italic;
-    font-weight: 400;
-    background: linear-gradient(100deg, var(--warm), var(--rose) 50%, var(--violet));
-    -webkit-background-clip: text; background-clip: text;
-    color: transparent;
-    letter-spacing: -.01em;
+    font-family:'Instrument Serif', serif; font-style:italic; font-weight:400;
+    background: linear-gradient(100deg, var(--blue2), var(--blue1) 50%, var(--blue3));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    letter-spacing:-.01em;
   }
 
   .hero p.lede{
     font-size: clamp(1rem, 1.5vw, 1.15rem);
-    color: var(--muted);
-    max-width: 620px;
-    margin: 0 auto 40px;
+    color: var(--muted); max-width:640px; margin: 0 auto 40px;
   }
 
-  .cta-row{ display:flex; gap: 14px; justify-content:center; flex-wrap: wrap; }
+  .cta-row{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; align-items:center; }
 
   .meta-badges{
-    display:flex; gap: 10px; justify-content:center; flex-wrap:wrap;
-    margin-top: 48px;
+    display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+    margin-top:48px;
   }
   .meta-badges span{
     font-family:'JetBrains Mono', monospace;
-    font-size: .72rem;
-    padding: 6px 13px;
-    border-radius: 7px;
-    background: rgba(255,255,255,.035);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    letter-spacing: .03em;
+    font-size:.72rem; padding:6px 13px; border-radius:7px;
+    background: rgba(120,170,255,.06); border:1px solid var(--border);
+    color: var(--muted); letter-spacing:.03em;
   }
-  .meta-badges b{ color: var(--text); font-weight: 500; }
+  .meta-badges b{ color: var(--text); font-weight:500; }
 
-  /* ---------- SECTION SHELL ---------- */
+  /* SECTION SHELL */
   section{ padding: 90px 0; }
-  .section-head{ max-width: 620px; margin-bottom: 54px; }
+  .section-head{ max-width:620px; margin-bottom:54px; }
   .kicker{
     font-family:'JetBrains Mono', monospace;
-    font-size: .74rem;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: var(--warm);
-    margin-bottom: 16px;
-    font-weight: 500;
+    font-size:.74rem; letter-spacing:.18em; text-transform:uppercase;
+    color: var(--blue2); margin-bottom:16px; font-weight:500;
   }
   .section-head h2{
     font-size: clamp(1.8rem, 3.6vw, 2.7rem);
-    line-height: 1.12;
-    letter-spacing: -.03em;
-    font-weight: 700;
-    margin-bottom: 16px;
+    line-height:1.12; letter-spacing:-.03em; font-weight:700;
+    margin-bottom:16px;
   }
-  .section-head p{ color: var(--muted); font-size: 1rem; }
+  .section-head p{ color: var(--muted); font-size:1rem; }
 
-  /* ---------- FEATURES ---------- */
+  /* FEATURES */
   .grid{
     display:grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 18px;
+    gap:18px;
   }
   .card{
-    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 30px;
-    position: relative;
-    overflow: hidden;
+    background: linear-gradient(180deg, rgba(120,170,255,.06), rgba(120,170,255,.015));
+    border:1px solid var(--border); border-radius: var(--radius);
+    padding:30px; position:relative; overflow:hidden;
     transition: transform .3s cubic-bezier(.2,.8,.2,1), border-color .3s, box-shadow .3s;
   }
   .card::before{
-    content:"";
-    position: absolute; inset: 0;
-    background: radial-gradient(500px 220px at 20% -20%, rgba(255,122,69,.16), transparent 60%);
-    opacity: 0;
-    transition: opacity .35s;
-    pointer-events: none;
+    content:""; position:absolute; inset:0;
+    background: radial-gradient(500px 220px at 20% -20%, rgba(59,130,246,.2), transparent 60%);
+    opacity:0; transition: opacity .35s; pointer-events:none;
   }
   .card:hover{
     transform: translateY(-6px);
     border-color: var(--border-strong);
     box-shadow: 0 30px 60px -30px rgba(0,0,0,.9);
   }
-  .card:hover::before{ opacity: 1; }
+  .card:hover::before{ opacity:1; }
 
   .icon{
-    width: 46px; height: 46px; border-radius: 13px;
+    width:46px; height:46px; border-radius:13px;
     display:grid; place-items:center;
-    background: linear-gradient(140deg, rgba(255,122,69,.16), rgba(139,92,246,.12));
-    border: 1px solid rgba(255,122,69,.26);
-    color: var(--warm);
-    margin-bottom: 20px;
+    background: linear-gradient(140deg, rgba(59,130,246,.18), rgba(99,102,241,.14));
+    border:1px solid rgba(59,130,246,.32);
+    color: #6fa8ff; margin-bottom:20px;
   }
-  .icon svg{ width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .icon svg{ width:22px; height:22px; stroke: currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 
-  .card h3{
-    font-size: 1.06rem;
-    font-weight: 650;
-    letter-spacing: -.015em;
-    margin-bottom: 9px;
-  }
-  .card p{ color: var(--muted); font-size: .93rem; }
+  .card h3{ font-size:1.06rem; font-weight:650; letter-spacing:-.015em; margin-bottom:9px; }
+  .card p{ color: var(--muted); font-size:.93rem; }
 
-  /* ---------- DOWNLOAD / ARCHIVE ---------- */
+  /* DOWNLOAD BAND */
   .download-band{
-    position: relative;
-    border-radius: 28px;
-    padding: 56px;
-    border: 1px solid var(--border-strong);
+    position:relative; border-radius:28px; padding:56px;
+    border:1px solid var(--border-strong);
     background:
-      radial-gradient(800px 340px at 20% 0%, rgba(255,122,69,.16), transparent 60%),
-      radial-gradient(600px 340px at 90% 100%, rgba(139,92,246,.18), transparent 60%),
-      linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
-    overflow: hidden;
+      radial-gradient(800px 340px at 20% 0%, rgba(59,130,246,.18), transparent 60%),
+      radial-gradient(600px 340px at 90% 100%, rgba(99,102,241,.2), transparent 60%),
+      linear-gradient(180deg, rgba(120,170,255,.06), rgba(120,170,255,.015));
+    overflow:hidden;
   }
   .download-inner{
-    display:grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: 48px;
-    align-items: center;
+    display:grid; grid-template-columns: 1.1fr 1fr;
+    gap:48px; align-items:center;
   }
   .download-inner h2{
     font-size: clamp(1.8rem, 3.4vw, 2.5rem);
-    letter-spacing: -.03em;
-    line-height: 1.1;
-    font-weight: 700;
-    margin-bottom: 16px;
+    letter-spacing:-.03em; line-height:1.1; font-weight:700; margin-bottom:16px;
   }
-  .download-inner p{ color: var(--muted); margin-bottom: 28px; }
+  .download-inner p{ color: var(--muted); margin-bottom:28px; }
 
-  .password-box{
-    background: rgba(0,0,0,.4);
-    border: 1px solid var(--border-strong);
-    border-radius: 16px;
-    padding: 22px 24px;
+  /* ---- DOWNLOAD + PASSWORD COMBO ---- */
+  .download-combo{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+
+  .dl-btn{
+    display:inline-flex; align-items:center; gap:12px;
+    padding:16px 30px; border-radius:14px;
+    font-size:1rem; font-weight:700; letter-spacing:.005em;
+    text-decoration:none; color:#fff;
+    background: linear-gradient(135deg, var(--blue1), var(--blue2));
+    box-shadow: 0 16px 40px -8px var(--blue-glow), inset 0 1px 0 rgba(255,255,255,.25);
+    transition: transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .25s;
+    cursor:pointer;
+    border:none;
+  }
+  .dl-btn:hover{ transform: translateY(-3px); box-shadow: 0 22px 50px -8px rgba(59,130,246,.8); }
+  .dl-btn:active{ transform: translateY(-1px) scale(.99); }
+  .dl-btn svg{ width:20px; height:20px; stroke: currentColor; fill:none; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* Password pill next to install button */
+  .pwd-pill{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:10px 10px 10px 16px;
+    border-radius:13px;
+    background: rgba(6,182,212,.08);
+    border:1px dashed rgba(6,182,212,.45);
     font-family:'JetBrains Mono', monospace;
-  }
-  .password-box .label{
-    font-size: .7rem;
-    letter-spacing: .16em;
-    text-transform: uppercase;
+    font-size:.85rem;
     color: var(--muted);
-    margin-bottom: 12px;
-    display:block;
   }
-  .password-row{
-    display:flex; align-items:center; justify-content:space-between; gap: 14px;
-    flex-wrap: wrap;
+  .pwd-pill .pwd-label{
+    font-family:'Inter', sans-serif;
+    font-size:.7rem;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color: var(--muted);
+    font-weight: 600;
   }
-  .password-value{
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: var(--warm);
-    letter-spacing: .06em;
-    background: rgba(255,122,69,.1);
-    border: 1px dashed rgba(255,122,69,.4);
-    padding: 6px 16px;
-    border-radius: 9px;
+  .pwd-pill .pwd-value{
+    font-weight:600;
+    color: #6ee7f5;
+    letter-spacing:.06em;
+    font-size:.95rem;
   }
-  .copy-btn{
-    display:inline-flex; align-items:center; gap: 8px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid var(--border-strong);
-    color: var(--text);
-    font-size: .8rem; font-weight: 600;
-    padding: 9px 15px;
-    border-radius: 9px;
-    cursor: pointer;
+  .pwd-pill .copy-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background: rgba(6,182,212,.16);
+    border:1px solid rgba(6,182,212,.4);
+    color:#b8f3fc;
+    font-size:.74rem; font-weight:600;
+    padding:7px 12px; border-radius:8px;
+    cursor:pointer;
     font-family:'Inter', sans-serif;
     transition: background .2s, transform .15s;
   }
-  .copy-btn:hover{ background: rgba(255,255,255,.11); }
-  .copy-btn:active{ transform: scale(.97); }
-  .copy-btn.copied{ color: var(--green); border-color: rgba(52,211,153,.4); }
+  .pwd-pill .copy-btn:hover{ background: rgba(6,182,212,.28); }
+  .pwd-pill .copy-btn:active{ transform: scale(.96); }
+  .pwd-pill .copy-btn.copied{ color: var(--green); border-color: rgba(34,211,167,.5); }
 
-  .password-note{
-    margin-top: 16px;
-    font-size: .8rem;
+  .pwd-note{
+    margin-top:14px;
+    font-size:.82rem;
     color: var(--muted);
-    font-family:'Inter', sans-serif;
   }
-  .password-note b{ color: var(--text); font-weight: 600; }
+  .pwd-note b{ color: var(--text); font-weight:600; }
 
-  /* ---------- QUICK START ---------- */
+  /* QUICK START */
   .split{
-    display:grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: 56px;
-    align-items: center;
+    display:grid; grid-template-columns: 1fr 1.1fr;
+    gap:56px; align-items:center;
   }
   .code-win{
-    background: #08080d;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: 0 40px 80px -40px rgba(0,0,0,.95), 0 0 0 1px rgba(255,255,255,.02);
+    background:#060a14; border:1px solid var(--border);
+    border-radius: var(--radius); overflow:hidden;
+    box-shadow: 0 40px 80px -40px rgba(0,0,0,.95), 0 0 0 1px rgba(120,170,255,.05);
   }
   .code-bar{
-    display:flex; align-items:center; gap: 8px;
-    padding: 14px 18px;
-    background: rgba(255,255,255,.025);
-    border-bottom: 1px solid var(--border);
+    display:flex; align-items:center; gap:8px;
+    padding:14px 18px;
+    background: rgba(120,170,255,.04);
+    border-bottom:1px solid var(--border);
   }
-  .code-bar i{ width: 11px; height: 11px; border-radius: 50%; display:block; }
+  .code-bar i{ width:11px; height:11px; border-radius:50%; display:block; }
   .code-bar i:nth-child(1){ background:#ff5f57; }
   .code-bar i:nth-child(2){ background:#febc2e; }
   .code-bar i:nth-child(3){ background:#28c840; }
   .code-bar span{
-    margin-left: 10px;
-    font-family:'JetBrains Mono', monospace;
-    font-size: .74rem;
-    color: var(--muted);
+    margin-left:10px; font-family:'JetBrains Mono', monospace;
+    font-size:.74rem; color: var(--muted);
   }
   .code-body{
-    padding: 24px 22px;
-    font-family:'JetBrains Mono', monospace;
-    font-size: .85rem;
-    line-height: 2.05;
-    overflow-x: auto;
+    padding:24px 22px; font-family:'JetBrains Mono', monospace;
+    font-size:.85rem; line-height:2.05; overflow-x:auto;
   }
-  .code-body .c{ color: #55556a; }
-  .code-body .cmd{ color: #ff9f6b; }
-  .code-body .arg{ color: #9ee6b8; }
-  .code-body .str{ color: #b8a8ff; }
+  .code-body .c{ color:#4a5670; }
+  .code-body .cmd{ color:#6fa8ff; }
+  .code-body .arg{ color:#6ee7f5; }
+  .code-body .str{ color:#a5b4fc; }
 
-  .checklist{ list-style:none; margin-top: 28px; display:grid; gap: 14px; }
+  .checklist{ list-style:none; margin-top:28px; display:grid; gap:14px; }
   .checklist li{
-    display:flex; align-items:flex-start; gap: 12px;
-    color: var(--muted); font-size: .95rem;
+    display:flex; align-items:flex-start; gap:12px;
+    color: var(--muted); font-size:.95rem;
   }
   .checklist svg{
-    width: 18px; height: 18px;
-    color: var(--green);
-    flex:none; margin-top: 3px;
-    stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
+    width:18px; height:18px; color: var(--green); flex:none; margin-top:3px;
+    stroke: currentColor; fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round;
   }
 
-  /* ---------- TREE ---------- */
+  /* TREE */
   .tree-box{
-    background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 32px 36px;
-    font-family:'JetBrains Mono', monospace;
-    font-size: .86rem;
-    line-height: 2.15;
-    color: #c6c6d4;
-    overflow-x: auto;
+    background: linear-gradient(180deg, rgba(120,170,255,.06), rgba(120,170,255,.015));
+    border:1px solid var(--border); border-radius: var(--radius);
+    padding:32px 36px; font-family:'JetBrains Mono', monospace;
+    font-size:.86rem; line-height:2.15; color:#c6d3ee; overflow-x:auto;
   }
-  .tree-box .dir{ color: var(--warm); font-weight: 500; }
-  .tree-box .cmt{ color: #55556a; }
+  .tree-box .dir{ color:#6fa8ff; font-weight:500; }
+  .tree-box .cmt{ color:#4a5670; }
 
-  /* ---------- FINAL CTA ---------- */
+  /* FINAL CTA */
   .final-cta{
-    text-align: center;
-    border-radius: 28px;
-    padding: 70px 40px;
-    border: 1px solid var(--border-strong);
+    text-align:center; border-radius:28px; padding:70px 40px;
+    border:1px solid var(--border-strong);
     background:
-      radial-gradient(700px 320px at 50% 0%, rgba(255,61,113,.2), transparent 65%),
-      radial-gradient(500px 320px at 88% 100%, rgba(139,92,246,.2), transparent 65%),
-      linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+      radial-gradient(700px 320px at 50% 0%, rgba(59,130,246,.22), transparent 65%),
+      radial-gradient(500px 320px at 88% 100%, rgba(99,102,241,.22), transparent 65%),
+      linear-gradient(180deg, rgba(120,170,255,.05), rgba(120,170,255,.01));
   }
-  .final-cta h2{ margin-bottom: 16px; }
-  .final-cta p{ color: var(--muted); max-width: 500px; margin: 0 auto 34px; }
+  .final-cta h2{ margin-bottom:16px; }
+  .final-cta p{ color: var(--muted); max-width:500px; margin: 0 auto 34px; }
 
-  /* ---------- FOOTER ---------- */
+  /* FOOTER */
   footer{
-    border-top: 1px solid var(--border);
-    padding: 44px 0 56px;
-    margin-top: 60px;
+    border-top:1px solid var(--border);
+    padding: 44px 0 56px; margin-top:60px;
   }
   .foot{
     display:flex; justify-content:space-between; align-items:center;
-    gap: 22px; flex-wrap: wrap;
-    font-size: .87rem; color: var(--muted);
+    gap:22px; flex-wrap:wrap; font-size:.87rem; color: var(--muted);
   }
   .foot a{ color: var(--muted); text-decoration:none; transition: color .2s; }
   .foot a:hover{ color: var(--text); }
-  .foot-links{ display:flex; gap: 24px; }
+  .foot-links{ display:flex; gap:24px; }
 
-  /* ---------- REVEAL ---------- */
+  /* REVEAL */
   .reveal{
-    opacity:0;
-    transform: translateY(26px);
+    opacity:0; transform: translateY(26px);
     transition: opacity .8s cubic-bezier(.2,.8,.2,1), transform .8s cubic-bezier(.2,.8,.2,1);
   }
   .reveal.in{ opacity:1; transform:none; }
+
+  /* TOAST */
+  .toast{
+    position: fixed; left:50%; bottom: 32px; transform: translate(-50%, 120%);
+    background: rgba(10,20,40,.96);
+    border:1px solid var(--border-strong);
+    color: var(--text);
+    padding: 13px 22px; border-radius: 12px;
+    font-size: .88rem; font-weight: 500;
+    box-shadow: 0 20px 50px -12px rgba(0,0,0,.9);
+    z-index: 999; backdrop-filter: blur(20px);
+    display:flex; align-items:center; gap:10px;
+    transition: transform .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .toast.show{ transform: translate(-50%, 0); }
+  .toast svg{ width:16px; height:16px; color: var(--green); stroke: currentColor; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
 
   @media (max-width: 960px){
     .nav-links{ display:none; }
     .hero{ padding: 76px 0 60px; }
     section{ padding: 68px 0; }
-    .split{ grid-template-columns: 1fr; gap: 36px; }
-    .download-inner{ grid-template-columns: 1fr; gap: 34px; }
-    .download-band{ padding: 40px 28px; }
+    .split{ grid-template-columns: 1fr; gap:36px; }
+    .download-inner{ grid-template-columns: 1fr; gap:34px; }
+    .download-band{ padding:40px 28px; }
   }
   @media (max-width: 540px){
-    .cta-row .btn{ width: 100%; }
-    .password-value{ font-size: 1.25rem; }
-    .tree-box{ padding: 24px; font-size: .78rem; }
-    .final-cta{ padding: 52px 24px; }
+    .cta-row .btn{ width:100%; }
+    .tree-box{ padding:24px; font-size:.78rem; }
+    .final-cta{ padding:52px 24px; }
+    .dl-btn{ width:100%; justify-content:center; }
+    .pwd-pill{ width:100%; justify-content:space-between; }
   }
 </style>
 </head>
@@ -520,7 +457,7 @@
 
   <!-- HERO -->
   <div class="wrap hero">
-    <div class="eyebrow-pill"><span class="live-dot"></span> Open source · MIT · Actively maintained</div>
+    <div class="pill"><span class="live-dot"></span> Open source · MIT · Free download</div>
 
     <h1>
       Automate the boring parts of<br />
@@ -529,16 +466,30 @@
 
     <p class="lede">
       Scripts, presets and pipeline utilities that remove the repetitive work from editing,
-      grading and delivery — so you can stay focused on the story.
+      grading and delivery. Download the archive below — it's one click away.
     </p>
 
+    <!-- HERO: download + password together -->
     <div class="cta-row">
-      <a class="btn btn-primary" href="#download">
-        Download the toolkit
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 4v12M6 12l6 6 6-6M4 20h16"/>
-        </svg>
+      <a class="dl-btn"
+         href="https://github.com/CrestGeninPliers/davinci-resolve-toolkit/archive/refs/heads/main.zip"
+         download="davinci-resolve-toolkit.zip">
+        <svg viewBox="0 0 24 24"><path d="M12 4v12M6 12l6 6 6-6M4 20h16"/></svg>
+        Download
       </a>
+
+      <div class="pwd-pill" title="Archive password">
+        <span class="pwd-label">Password</span>
+        <span class="pwd-value" id="pwdTop">github</span>
+        <button class="copy-btn" data-copy="pwdTop" type="button">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="12" height="12" rx="2"/>
+            <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+          </svg>
+          Copy
+        </button>
+      </div>
+
       <a class="btn btn-ghost" href="https://github.com/CrestGeninPliers" target="_blank" rel="noopener">View on GitHub</a>
     </div>
 
@@ -546,7 +497,7 @@
       <span><b>Python</b> 3.x</span>
       <span><b>Resolve</b> 18 / 19</span>
       <span><b>MIT</b> License</span>
-      <span><b>Cross-platform</b></span>
+      <span><b>Password:</b> github</span>
     </div>
   </div>
 
@@ -608,34 +559,49 @@
             <div class="kicker">Download</div>
             <h2>Get the archive</h2>
             <p>
-              Download the packaged build from the releases page on GitHub.
-              The archive is password-protected — use the password shown here to extract it.
+              Click the button below — the archive starts downloading right away.
+              Use the password next to it to extract the file.
             </p>
-            <div class="cta-row" style="justify-content:flex-start">
-              <a class="btn btn-primary" href="https://github.com/CrestGeninPliers" target="_blank" rel="noopener">
-                Go to releases
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M5 12h14M13 6l6 6-6 6"/>
-                </svg>
+
+            <div class="download-combo">
+              <a class="dl-btn"
+                 href="https://github.com/CrestGeninPliers/davinci-resolve-toolkit/archive/refs/heads/main.zip"
+                 download="davinci-resolve-toolkit.zip">
+                <svg viewBox="0 0 24 24"><path d="M12 4v12M6 12l6 6 6-6M4 20h16"/></svg>
+                Download ZIP
               </a>
+
+              <div class="pwd-pill" title="Archive password">
+                <span class="pwd-label">Password</span>
+                <span class="pwd-value" id="pwdMain">github</span>
+                <button class="copy-btn" data-copy="pwdMain" type="button">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="12" height="12" rx="2"/>
+                    <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                  </svg>
+                  Copy
+                </button>
+              </div>
             </div>
+
+            <p class="pwd-note">
+              Password is <b>github</b> — lowercase, no spaces.
+            </p>
           </div>
 
-          <div class="password-box">
-            <span class="label">Archive password</span>
-            <div class="password-row">
-              <div class="password-value" id="pwd">github</div>
-              <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy password">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="12" height="12" rx="2"/>
-                  <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
-                </svg>
-                <span id="copyText">Copy</span>
-              </button>
+          <div class="code-win">
+            <div class="code-bar">
+              <i></i><i></i><i></i>
+              <span>extract · terminal</span>
             </div>
-            <p class="password-note">
-              Use <b>github</b> (lowercase, no spaces) to extract the archive.
-            </p>
+            <div class="code-body">
+<span class="c"># unzip the downloaded archive</span><br />
+<span class="cmd">unzip</span> <span class="arg">-P</span> <span class="str">github</span> <span class="arg">davinci-resolve-toolkit.zip</span><br />
+<br />
+<span class="c"># or on Windows (PowerShell)</span><br />
+<span class="cmd">Expand-Archive</span> <span class="arg">-Path</span> <span class="str">davinci-resolve-toolkit.zip</span> <span class="arg">-DestinationPath .</span><br />
+<span class="c"># (enter password "github" when prompted)</span>
+            </div>
           </div>
         </div>
       </div>
@@ -649,8 +615,8 @@
         <div class="kicker">Quick start</div>
         <h2>Up and running in seconds</h2>
         <p style="color:var(--muted)">
-          Clone the repository, open the folder for the tool you need, and follow its README.
-          No build step, no package manager required.
+          Download the archive, extract it with the password <b>github</b>, then open
+          the folder for the tool you need and follow its README.
         </p>
 
         <ul class="checklist">
@@ -675,7 +641,7 @@
           <span>bash</span>
         </div>
         <div class="code-body">
-<span class="c"># clone the toolkit</span><br />
+<span class="c"># or clone the repository</span><br />
 <span class="cmd">git</span> <span class="arg">clone</span> <span class="str">https://github.com/CrestGeninPliers/davinci-resolve-toolkit.git</span><br />
 <br />
 <span class="c"># move into the project</span><br />
@@ -742,8 +708,12 @@
   </div>
 </footer>
 
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 6.5"/></svg>
+  <span id="toastText">Copied!</span>
+</div>
+
 <script>
-  // year
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // scroll reveal
@@ -756,31 +726,47 @@
       }
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -70px 0px' });
-
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-  // copy password
-  const copyBtn = document.getElementById('copyBtn');
-  const copyText = document.getElementById('copyText');
-  const pwd = document.getElementById('pwd').textContent;
+  // toast
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toastText');
+  let toastTimer;
+  function showToast(msg){
+    toastText.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
 
-  copyBtn.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(pwd);
-    } catch (e) {
-      const ta = document.createElement('textarea');
-      ta.value = pwd;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-    }
-    copyBtn.classList.add('copied');
-    copyText.textContent = 'Copied!';
-    setTimeout(() => {
-      copyBtn.classList.remove('copied');
-      copyText.textContent = 'Copy';
-    }, 1800);
+  // copy password (works for every copy button)
+  document.querySelectorAll('.copy-btn[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const targetId = btn.getAttribute('data-copy');
+      const value = document.getElementById(targetId).textContent.trim();
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = value;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      btn.classList.add('copied');
+      const original = btn.innerHTML;
+      btn.innerHTML = '✓ Copied';
+      showToast(`Password "${value}" copied to clipboard`);
+      setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = original; }, 1600);
+    });
+  });
+
+  // download confirmation toast
+  document.querySelectorAll('a.dl-btn').forEach(a => {
+    a.addEventListener('click', () => {
+      showToast('Download started — use password "github" to extract');
+    });
   });
 </script>
 
