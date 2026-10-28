@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DaVinci Resolve Toolkit — Automation for Post-Production</title>
+<meta name="description" content="A collection of scripts, utilities and presets to automate and extend DaVinci Resolve workflows." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #08080c;
+    --bg-soft: #0d0d14;
+    --panel: rgba(255,255,255,.035);
+    --border: rgba(255,255,255,.09);
+    --text: #ececf1;
+    --muted: #9a9aab;
+    --accent-a: #ff8a3d;
+    --accent-b: #ff2e63;
+    --accent-c: #7b5cff;
+    --radius: 18px;
+    --maxw: 1160px;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ambient background */
+  body::before{
+    content:"";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(900px 600px at 12% -10%, rgba(255,138,61,.16), transparent 60%),
+      radial-gradient(800px 600px at 92% 4%, rgba(123,92,255,.16), transparent 60%),
+      radial-gradient(700px 700px at 50% 110%, rgba(255,46,99,.10), transparent 60%);
+  }
+  body::after{
+    content:"";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(circle at 50% 0%, #000 0%, transparent 78%);
+    -webkit-mask-image: radial-gradient(circle at 50% 0%, #000 0%, transparent 78%);
+  }
+
+  .wrap{ width:100%; max-width: var(--maxw); margin:0 auto; padding: 0 24px; }
+
+  /* ---------- NAV ---------- */
+  header{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(8,8,12,.62);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    height: 68px;
+    gap: 24px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap: 11px;
+    font-weight: 700;
+    letter-spacing:-.02em;
+    color: var(--text);
+    text-decoration:none;
+    font-size: 1rem;
+  }
+  .brand-mark{
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent-a), var(--accent-b) 60%, var(--accent-c));
+    display:grid; place-items:center;
+    font-size: 14px;
+    box-shadow: 0 6px 22px rgba(255,46,99,.35);
+    flex:none;
+  }
+  .brand span{ color: var(--muted); font-weight: 500; }
+
+  .nav-links{ display:flex; align-items:center; gap: 28px; }
+  .nav-links a{
+    color: var(--muted);
+    text-decoration:none;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: color .2s ease;
+  }
+  .nav-links a:hover{ color: var(--text); }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    padding: 11px 20px;
+    border-radius: 11px;
+    font-size: .9rem;
+    font-weight: 600;
+    text-decoration:none;
+    border: 1px solid transparent;
+    transition: transform .18s ease, box-shadow .25s ease, background .2s ease, border-color .2s ease;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .btn-primary{
+    background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+    color: #fff;
+    box-shadow: 0 8px 26px rgba(255,46,99,.32);
+  }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 12px 34px rgba(255,46,99,.45); }
+  .btn-ghost{
+    background: var(--panel);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover{ background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.18); transform: translateY(-2px); }
+
+  /* ---------- HERO ---------- */
+  .hero{ padding: 96px 0 72px; text-align:center; }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    padding: 7px 15px 7px 9px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    font-size: .8rem;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 28px;
+  }
+  .dot{
+    width:7px; height:7px; border-radius:50%;
+    background: #3ddc84;
+    box-shadow: 0 0 0 0 rgba(61,220,132,.6);
+    animation: pulse 2.4s infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 0 rgba(61,220,132,.55); }
+    70%{ box-shadow: 0 0 0 9px rgba(61,220,132,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(61,220,132,0); }
+  }
+
+  h1{
+    font-size: clamp(2.4rem, 6vw, 4.15rem);
+    line-height: 1.05;
+    letter-spacing: -.035em;
+    font-weight: 800;
+    margin-bottom: 22px;
+  }
+  .grad{
+    background: linear-gradient(100deg, var(--accent-a) 0%, var(--accent-b) 45%, var(--accent-c) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .lede{
+    font-size: clamp(1rem, 1.6vw, 1.16rem);
+    color: var(--muted);
+    max-width: 660px;
+    margin: 0 auto 36px;
+  }
+
+  .cta-row{ display:flex; gap:14px; justify-content:center; flex-wrap: wrap; }
+
+  .badges{
+    display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+    margin-top: 46px;
+  }
+  .badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size: .74rem;
+    padding: 6px 13px;
+    border-radius: 8px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: .02em;
+  }
+  .badge b{ color: var(--text); font-weight: 500; }
+
+  /* ---------- SECTIONS ---------- */
+  section{ padding: 78px 0; }
+
+  .section-head{ max-width: 640px; margin-bottom: 52px; }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size: .76rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent-a);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  h2{
+    font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+    letter-spacing: -.03em;
+    line-height: 1.15;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .section-head p{ color: var(--muted); font-size: 1rem; }
+
+  /* ---------- FEATURES ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 18px;
+  }
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.018));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .28s cubic-bezier(.2,.8,.2,1), border-color .28s ease, box-shadow .28s ease;
+  }
+  .card::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: radial-gradient(400px 200px at 50% -30%, rgba(255,138,61,.16), transparent 70%);
+    opacity: 0;
+    transition: opacity .3s ease;
+    pointer-events:none;
+  }
+  .card:hover{
+    transform: translateY(-5px);
+    border-color: rgba(255,255,255,.2);
+    box-shadow: 0 22px 50px -20px rgba(0,0,0,.85);
+  }
+  .card:hover::after{ opacity: 1; }
+
+  .icon{
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display:grid; place-items:center;
+    background: rgba(255,138,61,.12);
+    border: 1px solid rgba(255,138,61,.28);
+    color: var(--accent-a);
+    margin-bottom: 18px;
+  }
+  .icon svg{ width:21px; height:21px; stroke: currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+
+  .card h3{
+    font-size: 1.05rem;
+    font-weight: 650;
+    letter-spacing: -.015em;
+    margin-bottom: 8px;
+  }
+  .card p{ color: var(--muted); font-size: .92rem; }
+
+  /* ---------- INSTALL ---------- */
+  .split{
+    display:grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .code-window{
+    background: #0a0a11;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 32px 70px -30px rgba(0,0,0,.95);
+  }
+  .code-bar{
+    display:flex; align-items:center; gap: 8px;
+    padding: 13px 16px;
+    background: rgba(255,255,255,.028);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-bar i{ width:11px; height:11px; border-radius:50%; background:#2c2c38; display:block; }
+  .code-bar i:nth-child(1){ background:#ff5f57; }
+  .code-bar i:nth-child(2){ background:#febc2e; }
+  .code-bar i:nth-child(3){ background:#28c840; }
+  .code-bar span{
+    margin-left: 8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: .74rem;
+    color: var(--muted);
+  }
+  .code-body{
+    padding: 22px 20px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: .84rem;
+    line-height: 2;
+    overflow-x: auto;
+  }
+  .code-body .c{ color: #5d5d70; }
+  .code-body .cmd{ color: #ff9f6b; }
+  .code-body .arg{ color: #9ee6b8; }
+  .code-body .str{ color: #b8a8ff; }
+
+  .check-list{ list-style:none; margin-top: 26px; display:grid; gap: 13px; }
+  .check-list li{
+    display:flex; align-items:flex-start; gap: 12px;
+    color: var(--muted);
+    font-size: .95rem;
+  }
+  .check-list svg{
+    width: 18px; height: 18px;
+    color: #3ddc84;
+    flex:none;
+    margin-top: 3px;
+    stroke: currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;
+  }
+
+  /* ---------- STRUCTURE ---------- */
+  .tree{
+    background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 30px 34px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: .86rem;
+    line-height: 2.15;
+    color: #c6c6d4;
+    overflow-x: auto;
+  }
+  .tree .dir{ color: var(--accent-a); font-weight: 500; }
+  .tree .cmt{ color: #5d5d70; }
+
+  /* ---------- CTA BAND ---------- */
+  .band{
+    position: relative;
+    border-radius: 26px;
+    padding: 60px 44px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,.11);
+    background:
+      radial-gradient(700px 300px at 50% 0%, rgba(255,46,99,.22), transparent 65%),
+      radial-gradient(500px 320px at 85% 100%, rgba(123,92,255,.2), transparent 65%),
+      rgba(255,255,255,.03);
+    overflow: hidden;
+  }
+  .band h2{ margin-bottom: 14px; }
+  .band p{ color: var(--muted); max-width: 520px; margin: 0 auto 32px; }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top: 1px solid var(--border);
+    padding: 40px 0 54px;
+    margin-top: 40px;
+  }
+  .foot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap: 22px;
+    flex-wrap: wrap;
+    font-size: .87rem;
+    color: var(--muted);
+  }
+  .foot a{ color: var(--muted); text-decoration:none; transition: color .2s; }
+  .foot a:hover{ color: var(--text); }
+  .foot-links{ display:flex; gap: 24px; }
+
+  /* ---------- REVEAL ---------- */
+  .reveal{
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .reveal.in{ opacity:1; transform:none; }
+
+  @media (max-width: 900px){
+    .split{ grid-template-columns: 1fr; gap: 34px; }
+    .nav-links{ display: none; }
+    .hero{ padding: 64px 0 48px; }
+    section{ padding: 58px 0; }
+    .band{ padding: 46px 24px; }
+  }
+  @media (max-width: 520px){
+    .cta-row .btn{ width: 100%; justify-content: center; }
+    .tree{ padding: 22px; font-size: .78rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#top">
+      <span class="brand-mark">◆</span>
+      DaVinci Resolve <span>Toolkit</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#install">Quick start</a>
+      <a href="#structure">Structure</a>
+      <a href="#contribute">Contribute</a>
+    </nav>
+    <a class="btn btn-ghost" href="https://github.com/CrestGeninPliers" target="_blank" rel="noopener">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.55v-1.94c-3.2.7-3.88-1.54-3.88-1.54-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.66.8.55A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/>
+      </svg>
+      GitHub
+    </a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <div class="wrap hero">
+    <div class="pill"><span class="dot"></span> Open source · MIT License · Actively maintained</div>
+
+    <h1>
+      Automate your<br />
+      <span class="grad">DaVinci Resolve</span> workflow
+    </h1>
+
+    <p class="lede">
+      A collection of scripts, utilities and presets that take the repetitive work out of
+      editing, color grading and delivery — so you can spend more time on the cut.
+    </p>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/CrestGeninPliers" target="_blank" rel="noopener">
+        View on GitHub
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M13 6l6 6-6 6"/>
+        </svg>
+      </a>
+      <a class="btn btn-ghost" href="#install">Quick start</a>
+    </div>
+
+    <div class="badges">
+      <div class="badge"><b>Python</b> 3.x</div>
+      <div class="badge"><b>Resolve</b> 18 / 19</div>
+      <div class="badge"><b>MIT</b> License</div>
+      <div class="badge"><b>Cross-platform</b></div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Features</div>
+        <h2>Built for real post-production pipelines</h2>
+        <p>Modular by design — pick the tools you need and ignore the rest.</p>
+      </div>
+
+      <div class="grid">
+        <div class="card reveal">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>
+          </div>
+          <h3>Task automation</h3>
+          <p>Scripts that handle repetitive editing and grading operations, from batch trims to media sorting.</p>
+        </div>
+
+        <div class="card reveal">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18M3 12h18"/></svg>
+          </div>
+          <h3>Reusable presets</h3>
+          <p>Ready-made looks, templates and configuration examples you can drop straight into a project.</p>
+        </div>
+
+        <div class="card reveal">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+          </div>
+          <h3>Pipeline utilities</h3>
+          <p>Helpers for project management, export naming, delivery checks and folder structuring.</p>
+        </div>
+
+        <div class="card reveal">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>
+          </div>
+          <h3>Modular layout</h3>
+          <p>Each tool lives in its own folder with its own README, so nothing gets in your way.</p>
+        </div>
+
+        <div class="card reveal">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>
+          </div>
+          <h3>Readable code</h3>
+          <p>Documented, approachable Python you can adapt to your own studio's workflow in minutes.</p>
+        </div>
+
+        <div class="card reveal">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a7 7 0 0 1 14 0c0 5.5-7 10-7 10Z"/><circle cx="12" cy="11" r="2.5"/></svg>
+          </div>
+          <h3>Community driven</h3>
+          <p>Issues and pull requests are welcome. Bring your own scripts and help the toolkit grow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section id="install">
+    <div class="wrap split">
+      <div class="reveal">
+        <div class="eyebrow">Quick start</div>
+        <h2>Up and running in seconds</h2>
+        <p style="color:var(--muted)">
+          Clone the repository, open the folder for the tool you need, and follow its README.
+          No build step, no package manager required.
+        </p>
+
+        <ul class="check-list">
+          <li>
+            <svg viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 6.5"/></svg>
+            Works with DaVinci Resolve 18 and 19
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 6.5"/></svg>
+            Pure Python — no compiled dependencies
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 6.5"/></svg>
+            Every module ships with usage examples
+          </li>
+        </ul>
+
+        <div class="cta-row" style="justify-content:flex-start; margin-top:32px">
+          <a class="btn btn-primary" href="https://github.com/CrestGeninPliers" target="_blank" rel="noopener">Browse the repo</a>
+        </div>
+      </div>
+
+      <div class="code-window reveal">
+        <div class="code-bar">
+          <i></i><i></i><i></i>
+          <span>bash</span>
+        </div>
+        <div class="code-body">
+<span class="c"># clone the toolkit</span><br />
+<span class="cmd">git</span> <span class="arg">clone</span> <span class="str">https://github.com/CrestGeninPliers/davinci-resolve-toolkit.git</span><br />
+<br />
+<span class="c"># move into the project</span><br />
+<span class="cmd">cd</span> <span class="arg">davinci-resolve-toolkit</span><br />
+<br />
+<span class="c"># explore available tools</span><br />
+<span class="cmd">ls</span> <span class="arg">scripts/ presets/ examples/</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STRUCTURE -->
+  <section id="structure">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Repository structure</div>
+        <h2>Everything in its place</h2>
+        <p>A predictable layout means you always know where to look.</p>
+      </div>
+
+      <div class="tree reveal">
+<span class="dir">.</span><br />
+├── <span class="dir">scripts/</span>    <span class="cmt"># automation and helper scripts</span><br />
+├── <span class="dir">presets/</span>    <span class="cmt"># reusable presets and templates</span><br />
+├── <span class="dir">examples/</span>   <span class="cmt"># example workflows and usage samples</span><br />
+├── <span class="dir">docs/</span>       <span class="cmt"># additional documentation</span><br />
+└── README.md
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTRIBUTE -->
+  <section id="contribute">
+    <div class="wrap">
+      <div class="band reveal">
+        <div class="eyebrow" style="justify-content:center">Contribute</div>
+        <h2>Help make the toolkit better</h2>
+        <p>
+          Found a bug, have a script worth sharing, or want to improve the docs?
+          Open an issue or send a pull request — contributions of every size are welcome.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://github.com/CrestGeninPliers" target="_blank" rel="noopener">Star on GitHub</a>
+          <a class="btn btn-ghost" href="https://github.com/CrestGeninPliers" target="_blank" rel="noopener">Open an issue</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      © <span id="year"></span> DaVinci Resolve Toolkit · Built by
+      <a href="https://github.com/CrestGeninPliers" target="_blank" rel="noopener">CrestGeninPliers</a>
+    </div>
+    <div class="foot-links">
+      <a href="https://github.com/CrestGeninPliers" target="_blank" rel="noopener">GitHub</a>
+      <a href="#features">Features</a>
+      <a href="#install">Quick start</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // current year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // scroll reveal
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        entry.target.style.transitionDelay = (i * 60) + 'ms';
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
